@@ -20,9 +20,14 @@ function StudentAssignments() {
       const today = new Date();
 
       const remainingAssignments = assignmentRes.data
-        .filter((a) => !submittedAssignmentIds.includes(a.id))
-        .filter((a) => new Date(a.deadline) >= today)
-        .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+      .filter((a) => new Date(a.deadline) >= today)
+      .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
+      .map((a) => ({
+        ...a,
+        submitted: submittedAssignmentIds.includes(a.id)
+        
+      }));
+
 
       setAssignments(remainingAssignments);
     } catch (error) {
@@ -111,17 +116,23 @@ function StudentAssignments() {
                 <button
                   onClick={() => setSelectedAssignment(a)}
                   style={{
-                    backgroundColor: "#2d6a4f",
+                    backgroundColor: a.submitted ? "#ff8c00" : "#2d6a4f",
                     color: "white",
                     border: "none",
                     borderRadius: "25px",
                     padding: "8px 20px",
                     cursor: "pointer",
-                    marginTop: "15px",
+                    marginTop: "10px",
                   }}
-                >
-                  View / Submit
+                  disabled={a.submitted && new Date(a.deadline) < new Date()} // Disable if late
+                 >
+                  {!a.submitted
+                    ? "Submit"
+                    : new Date(a.deadline) >= new Date()
+                      ? "View / ReSubmit"
+                      : "View Only"}
                 </button>
+
               </li>
             ))}
           </ul>

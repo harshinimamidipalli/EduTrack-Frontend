@@ -182,8 +182,9 @@ function StudentSubmission({ selectedAssignment, onSubmissionSuccess, onBack }) 
           />
 
           <button type="submit" style={uploadButtonStyle}>
-            Submit Assignment
-          </button>
+  {selectedAssignment.submitted ? "Update Submission" : "Submit Assignment"}
+</button>
+
         </form>
       </div>
 
