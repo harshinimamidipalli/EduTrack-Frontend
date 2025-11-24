@@ -9,13 +9,9 @@ function StudentAssignments() {
 
   const fetchAssignments = async () => {
     try {
-      // Get all assignments
       const assignmentRes = await axios.get("http://localhost:8080/assignments");
-
-      // Get all submissions
       const submissionRes = await axios.get("http://localhost:8080/submissions");
 
-      // Filter out assignments that this student has already submitted
       const studentEmail = "student@test.com";
       const submittedAssignmentIds = submissionRes.data
         .filter((s) => s.studentEmail === studentEmail)
@@ -25,11 +21,8 @@ function StudentAssignments() {
 
       const remainingAssignments = assignmentRes.data
         .filter((a) => !submittedAssignmentIds.includes(a.id))
-        .filter((a) => new Date(a.deadline) >= today);
-
-      remainingAssignments.sort(
-      (a, b) => new Date(a.deadline) - new Date(b.deadline)
-      );
+        .filter((a) => new Date(a.deadline) >= today)
+        .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
 
       setAssignments(remainingAssignments);
     } catch (error) {
@@ -41,22 +34,20 @@ function StudentAssignments() {
     fetchAssignments();
   }, []);
 
+  // Real-time updates using SSE
   useEffect(() => {
-  const eventSource = new EventSource("http://localhost:8080/notifications/stream");
+    const eventSource = new EventSource("http://localhost:8080/notifications/stream");
 
-  eventSource.onmessage = (event) => {
-    if (event.data === "new-assignment") {
-      console.log("📢 New assignment detected — refreshing...");
-      fetchAssignments(); // refresh instantly
-    }
-  };
+    eventSource.onmessage = (event) => {
+      if (event.data === "new-assignment") {
+        fetchAssignments();
+      }
+    };
 
-  return () => {
-    eventSource.close();
-  };
-}, []);
+    return () => eventSource.close();
+  }, []);
 
-
+  // If assignment selected → Show submission screen
   if (selectedAssignment) {
     return (
       <StudentSubmission
@@ -92,6 +83,31 @@ function StudentAssignments() {
                 <em>Deadline: {a.deadline}</em>
                 <p>{a.description}</p>
 
+                {/* Show Image Preview if available */}
+                {a.imagePath && (
+                  <img
+                    src={`http://localhost:8080/${a.imagePath}`}
+                    alt="Assignment"
+                    width="250"
+                    style={{ borderRadius: "10px", marginTop: "10px" }}
+                  />
+                )}
+
+                {/* Show PDF Preview if available */}
+                {a.pdfPath && (
+                  <iframe
+                    src={`http://localhost:8080/${a.pdfPath}`}
+                    width="100%"
+                    height="300px"
+                    title="PDF Preview"
+                    style={{
+                      border: "1px solid #ccc",
+                      borderRadius: "8px",
+                      marginTop: "10px",
+                    }}
+                  ></iframe>
+                )}
+
                 <button
                   onClick={() => setSelectedAssignment(a)}
                   style={{
@@ -101,7 +117,7 @@ function StudentAssignments() {
                     borderRadius: "25px",
                     padding: "8px 20px",
                     cursor: "pointer",
-                    marginTop: "10px",
+                    marginTop: "15px",
                   }}
                 >
                   View / Submit

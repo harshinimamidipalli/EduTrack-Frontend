@@ -8,42 +8,64 @@ function TeacherAssignments() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [deadline, setDeadline] = useState("");
+  const [image, setImage] = useState(null);
+  const [pdf, setPdf] = useState(null);
 
-  // Fetch all assignments from backend
+  // Fetch assignments from backend
   const fetchAssignments = () => {
     axios
       .get("http://localhost:8080/assignments")
       .then((response) => setAssignments(response.data))
-      .catch((error) => console.error("Error fetching assignments:", error));
+      .catch((error) =>
+        console.error("Error fetching assignments:", error)
+      );
   };
 
   useEffect(() => {
     fetchAssignments();
   }, []);
 
-  // Handle adding a new assignment
+  // Add Assignment with optional files
   const handleAddAssignment = (e) => {
     e.preventDefault();
-    const newAssignment = { title, description, deadline };
+
+    // At least one: description OR image OR pdf
+    if (!description && !image && !pdf) {
+      alert("Please provide description or upload an image/PDF.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("deadline", deadline);
+    if (image) formData.append("image", image);
+    if (pdf) formData.append("pdf", pdf);
 
     axios
-      .post("http://localhost:8080/assignments", newAssignment)
+      .post("http://localhost:8080/assignments/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
       .then(() => {
         setTitle("");
         setDescription("");
         setDeadline("");
+        setImage(null);
+        setPdf(null);
         setShowForm(false);
         fetchAssignments();
       })
-      .catch((error) => console.error("Error adding assignment:", error));
+      .catch((error) =>
+        console.error("Error uploading assignment:", error)
+      );
   };
 
-    return (
+  return (
     <div className="dashboard-content">
       <div className="placeholder-box">
         <h1>Your Assignments</h1>
 
-        {/* Button to show/hide create form */}
+        {/* Open/Close Form Button */}
         <button
           onClick={() => setShowForm(!showForm)}
           style={{
@@ -60,7 +82,6 @@ function TeacherAssignments() {
           {showForm ? "Cancel" : "+ Create New Assignment"}
         </button>
 
-        {/* Assignment creation form */}
         {showForm && (
           <form onSubmit={handleAddAssignment} style={{ marginBottom: "30px" }}>
             <input
@@ -71,11 +92,11 @@ function TeacherAssignments() {
               required
             />
             <br />
+
             <textarea
               placeholder="Assignment Description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              required
               style={{
                 width: "80%",
                 height: "100px",
@@ -87,21 +108,45 @@ function TeacherAssignments() {
               }}
             ></textarea>
             <br />
-           <input
-            type="date"
-            value={deadline}
-            min={new Date().toISOString().split("T")[0]}
-            onChange={(e) => setDeadline(e.target.value)}
-          />
 
+            {/* Upload Image */}
+            <label style={{ fontWeight: "600" }}>Upload Image (Optional)</label>
             <br />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setImage(e.target.files[0])}
+            />
+            <br />
+            <br />
+
+            {/* Upload PDF */}
+            <label style={{ fontWeight: "600" }}>Upload PDF (Optional)</label>
+            <br />
+            <input
+              type="file"
+              accept="application/pdf"
+              onChange={(e) => setPdf(e.target.files[0])}
+            />
+            <br />
+            <br />
+
+            <input
+              type="date"
+              value={deadline}
+              min={new Date().toISOString().split("T")[0]}
+              onChange={(e) => setDeadline(e.target.value)}
+              required
+            />
+            <br />
+
             <button type="submit" style={{ marginTop: "10px" }}>
               Add Assignment
             </button>
           </form>
         )}
 
-        {/* Show assignments only if present */}
+        {/* Assignment List */}
         {assignments.length > 0 && (
           <ul style={{ listStyle: "none", padding: 0 }}>
             {assignments.map((a) => (
@@ -119,6 +164,28 @@ function TeacherAssignments() {
                 <br />
                 <em>Deadline: {a.deadline}</em>
                 <p>{a.description}</p>
+
+                {/* Image Preview */}
+                {a.imagePath && (
+                  <img
+                    src={`http://localhost:8080/${a.imagePath}`}
+                    alt="Assignment"
+                    width="200"
+                    style={{ borderRadius: "10px", display: "block", marginTop: "10px" }}
+                  />
+                )}
+
+                {/* PDF Link */}
+                {a.pdfPath && (
+                  <a
+                    href={`http://localhost:8080/${a.pdfPath}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ display: "block", marginTop: "8px" }}
+                  >
+                    📄 View PDF
+                  </a>
+                )}
               </li>
             ))}
           </ul>
@@ -126,7 +193,6 @@ function TeacherAssignments() {
       </div>
     </div>
   );
-
 }
 
 export default TeacherAssignments;
