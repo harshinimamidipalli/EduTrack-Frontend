@@ -1,0 +1,64 @@
+/* Dashboard.css */
+
+/* Overall layout */
+.dashboard-container {
+  display: flex;
+  height: 100vh;
+  background-color: #f9fafb;
+  font-family: "Poppins", sans-serif;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 230px;
+  background-color: #1e5631;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 40px;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar h2 {
+  font-size: 1.6rem;
+  margin-bottom: 40px;
+}
+
+.sidebar button {
+  width: 80%;
+  background-color: transparent;
+  color: white;
+  border: 1px solid white;
+  border-radius: 25px;
+  padding: 10px 15px;
+  margin: 8px 0;
+  cursor: pointer;
+  transition: 0.3s;
+  font-weight: bold;
+}
+
+.sidebar button:hover,
+.sidebar button.active {
+  background-color: white;
+  color: #1e5631;
+}
+
+/* Main content */
+.dashboard-content {
+  flex: 1;
+  padding: 40px;
+  overflow-y: auto;
+}
+
+.dashboard-content h1 {
+  color: #1e5631;
+  margin-bottom: 20px;
+}
+
+.placeholder-box {
+  background-color: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
