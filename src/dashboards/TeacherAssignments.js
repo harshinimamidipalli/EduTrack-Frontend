@@ -178,7 +178,7 @@ function TeacherAssignments() {
                 {/* PDF Link */}
                 {a.pdfPath && (
                   <a
-                    href={`http://localhost:8080/${a.pdfPath}`}
+                    href={`http://localhost:8080/${a.pdfPath.replace(/ /g, "%20")}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{ display: "block", marginTop: "8px" }}
